@@ -1,42 +1,39 @@
-import { Schema, model, Types } from 'mongoose';
-
-/**
- * Shape of a wallet document in TypeScript.
- *
- * @property {Types.ObjectId} user - Reference to the owning User document.
- * @property {number} tomanBalance - Cash balance in Toman.
- * @property {number} tetherBalance - Asset balance in Tether (USDT).
- */
-interface IWallet {
-  user: Types.ObjectId;
-  tomanBalance: number;
-  tetherBalance: number;
-}
+import { Schema, model } from "mongoose";
+import type { IWallet } from "./wallet.interface.js";
 
 const walletSchema = new Schema<IWallet>(
   {
-    user: {
+    userId: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
       unique: true,
     },
-    tomanBalance: {
+
+    amountRial: {
       type: Number,
       required: true,
       default: 0,
       min: 0,
     },
-    tetherBalance: {
+
+    amountUSDT: {
       type: Number,
       required: true,
       default: 0,
       min: 0,
     },
+
+    transactions: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Transaction",
+      },
+    ],
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-export const Wallet = model<IWallet>('Wallet', walletSchema);
+export const Wallet = model<IWallet>("Wallet", walletSchema);

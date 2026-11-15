@@ -109,6 +109,7 @@ function showAuth() {
 
 document.getElementById("login-form").addEventListener("submit", async (e) => {
   e.preventDefault();
+    console.log("1. LOGIN SUBMIT");
   const submitBtn = e.target.querySelector("button");
   const email = document.getElementById("login-email").value;
   const password = document.getElementById("login-password").value;
@@ -226,6 +227,7 @@ function initCharts() {
 // --- Price (line chart) ---
 
 async function refreshPrice() {
+    if (!priceChart) return;
   const data = await apiRequest("/price");
   const priceEl = document.getElementById("price-value");
 

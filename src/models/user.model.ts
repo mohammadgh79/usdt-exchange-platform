@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import type { IUser } from './user.interface.js';
 
 
 /**
@@ -10,13 +11,6 @@ import bcrypt from 'bcryptjs';
  * @property {string} password - Hashed password (never stored in plain text).
  * @property {'user' | 'admin'} role - Access level; defaults to 'user'.
  */
-interface IUser {
-  name: string;
-  email: string;
-  password: string;
-  role: 'user' | 'admin';
-  comparePassword(candidatePassword: string): Promise<boolean>;
-}
 
 const userSchema = new Schema<IUser>(
   {
