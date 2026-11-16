@@ -17,4 +17,5 @@ export interface IOrder {
   transactionId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
+  idempotencyKey: string;
 }

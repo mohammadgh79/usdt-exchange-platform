@@ -65,9 +65,24 @@ const OrderSchema = new Schema<IOrder>({
     unique: true,
 
   },
+  idempotencyKey: {
+  type: String,
+  required: true,
+  trim: true,
+  },
+  
   },
   {
     timestamps:true,
+  }
+);
+OrderSchema.index(
+  { userId: 1, idempotencyKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      idempotencyKey: { $type: "string" },
+    },
   }
 );
 
