@@ -29,7 +29,7 @@ export const register = async (req: Request, res: Response) => {
     }
     
     const user = await User.create({ name, email, password });
-    await Wallet.create({ userId: user.id, amountRial: 0, amountUSDT: 0,transactions:[] });
+    await Wallet.create({ userId: user.id, amountToman: 0, amountUSDT: 0,transactions:[] });
     const token = generateToken(user.id);
 
     res.status(201).json({

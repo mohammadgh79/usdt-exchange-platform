@@ -18,7 +18,7 @@ const TransactionSchema = new Schema<ITransaction>(
       enum: ["PENDING", "PROCESSING", "COMPLETED", "FAILED", "CANCELLED","REJECTED"],
       required: true,
     },
-    amountRial: {
+    amountToman: {
       type: Number,
       required: true,
       min:0,
@@ -47,9 +47,9 @@ const TransactionSchema = new Schema<ITransaction>(
 );
 TransactionSchema.pre("validate",function(){
   if(this.type ==="BUY" || this.type === "SELL"){
-    if (this.amountRial<=0){
+    if (this.amountToman<=0){
       this.invalidate(
-        "amountRial",
+        "amountToman",
         "مقدار باید همواره عدی مثبت باشد "
       )
     }
@@ -79,9 +79,9 @@ TransactionSchema.pre("validate",function(){
   }
   }
   else if (this.type === "DEPOSIT") {
-    if (this.amountRial<=0){
+    if (this.amountToman<=0){
       this.invalidate(
-        "amountRial",
+        "amountToman",
         "مقدار باید همواره عددی مثبت باشد"
       )
     }
@@ -114,9 +114,9 @@ TransactionSchema.pre("validate",function(){
   
 }
 else if (this.type === "WITHDRAW"){
-  if (this.amountRial<=0){
+  if (this.amountToman<=0){
       this.invalidate(
-        "amountRial",
+        "amountToman",
         "مقدار باید همواره عددی مثبت باشد"
       )
     }

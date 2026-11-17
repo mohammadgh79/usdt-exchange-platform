@@ -4,7 +4,7 @@ export interface ITransaction{
     userId: Types.ObjectId;
     type: TransactionType;
     status: TransactionStatus;
-    amountRial: number;
+    amountToman: number;
     amountUSDT: number;
     orderId?: Types.ObjectId;
     depositId?: Types.ObjectId;

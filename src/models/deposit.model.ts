@@ -7,7 +7,7 @@ const DepositSchema = new Schema<IDeposit>(
       required: true,
       ref: "User",
     },
-    amountRial: {
+    amountToman: {
       type: Number,
       required: true,
       min: 1,

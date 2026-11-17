@@ -7,7 +7,7 @@ const WithdrawSchema = new Schema<IWithdraw>(
       required: true,
       ref: "User",
     },
-    amountRial: {
+    amountToman: {
       type: Number,
       required: true,
       min: 1,

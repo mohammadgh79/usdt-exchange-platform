@@ -2,7 +2,7 @@ import type { Types } from "mongoose"
 
 export interface IWithdraw{
   userId:Types.ObjectId;
-  amountRial: number;
+  amountToman: number;
   transactionId: Types.ObjectId;
   reviewedBy?: Types.ObjectId;
   reviewedAt?: Date;

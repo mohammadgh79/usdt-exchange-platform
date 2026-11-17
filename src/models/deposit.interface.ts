@@ -2,7 +2,7 @@ import { Types } from "mongoose"
 
 export interface IDeposit{
   userId:Types.ObjectId;
-  amountRial: number;
+  amountToman: number;
   transactionId: Types.ObjectId;
   reviewedBy?: Types.ObjectId;
   reviewedAt?: Date;

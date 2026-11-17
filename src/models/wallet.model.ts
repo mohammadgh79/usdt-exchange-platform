@@ -10,7 +10,7 @@ const walletSchema = new Schema<IWallet>(
       unique: true,
     },
 
-    amountRial: {
+    amountToman: {
       type: Number,
       required: true,
       default: 0,

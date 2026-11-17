@@ -43,11 +43,13 @@ export async function buyUsdt(
   }
 
   if (
-    typeof idempotencyKey !== "string" ||
-    !idempotencyKey.trim()
-  ) {
-    throw new AppError("کلید یکتا معتبر نیست", 400);
-  }
+  typeof idempotencyKey !== "string" ||
+  !idempotencyKey.trim() ||
+  idempotencyKey.trim().length > 128
+) {
+  throw new AppError("کلید یکتا معتبر نیست", 400);
+}
+
 
   idempotencyKey = idempotencyKey.trim();
 
@@ -74,11 +76,17 @@ export async function buyUsdt(
     500
   );
 }
+const wallet = await Wallet.findOne({ userId });
+
+if (!wallet) {
+  throw new AppError("Wallet not found", 404);
+}
 
     return {
-      order: existingOrder,
-      transaction,
-    };
+  wallet,
+  order: existingOrder,
+  transaction,
+};
   }
 
   // 3. Calculate purchase amounts
@@ -102,11 +110,11 @@ export async function buyUsdt(
       const wallet = await Wallet.findOneAndUpdate(
         {
           userId,
-          amountRial: { $gte: finalAmount },
+          amountToman: { $gte: finalAmount },
         },
         {
           $inc: {
-            amountRial: -finalAmount,
+            amountToman: -finalAmount,
             amountUSDT: amount,
           },
           $push: {
@@ -121,13 +129,11 @@ export async function buyUsdt(
 
       // 7. Handle missing wallet or insufficient balance
       if (!wallet) {
-        const walletExists = await Wallet.exists({ userId }).session(
-          session
-        );
+        const wallet = await Wallet.findOne({ userId }).session(session);
 
-        if (!walletExists) {
-          throw new AppError("کیف پول پیدا نشد", 404);
-        }
+if (!wallet) {
+  throw new AppError("Wallet not found", 404);
+}
 
         // 8. Create rejected order
         const [order] = await Order.create(
@@ -161,14 +167,14 @@ export async function buyUsdt(
               type: "BUY",
               status: "REJECTED",
               amountUSDT: amount,
-              amountRial: finalAmount,
+              amountToman: finalAmount,
               orderId,
             },
           ],
           { session }
         );
 
-        return { order, transaction };
+        return { wallet,order, transaction };
       }
 
       // 10. Create completed order
@@ -203,7 +209,7 @@ export async function buyUsdt(
             type: "BUY",
             status: "COMPLETED",
             amountUSDT: amount,
-            amountRial: finalAmount,
+            amountToman: finalAmount,
             orderId,
           },
         ],
@@ -240,8 +246,14 @@ export async function buyUsdt(
           500
         );
       }
+      const wallet = await Wallet.findOne({ userId });
+
+if (!wallet) {
+  throw new AppError("Wallet not found", 404);
+}
 
         return {
+          wallet,
           order: existingOrder,
           transaction,
         };

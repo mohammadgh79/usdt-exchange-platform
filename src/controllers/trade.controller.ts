@@ -78,11 +78,11 @@ export const buy = asyncHandler(async (req: AuthRequest, res: Response) => {
         throw new AppError("کیف پول پیدا نشد", 404);
       }
 
-      if (wallet.amountRial < finalAmount) {
+      if (wallet.amountToman < finalAmount) {
         throw new AppError("موجودی تومانی کافی نیست", 400);
       }
 
-      wallet.amountRial -= finalAmount;
+      wallet.amountToman -= finalAmount;
       wallet.amountUSDT += amount;
       wallet.transactions.push(transactionId);
 
@@ -114,7 +114,7 @@ export const buy = asyncHandler(async (req: AuthRequest, res: Response) => {
           type: "BUY",
           status: "COMPLETED",
           amountUSDT: amount,
-          amountRial: finalAmount,
+          amountToman: finalAmount,
           orderId,
         }],
         { session }
@@ -182,7 +182,7 @@ export const sell = asyncHandler(async (req: AuthRequest, res: Response) => {
       }
 
       wallet.amountUSDT -= amount;
-      wallet.amountRial += finalAmount;
+      wallet.amountToman += finalAmount;
       wallet.transactions.push(transactionId);
 
       await wallet.save({ session });
@@ -213,7 +213,7 @@ export const sell = asyncHandler(async (req: AuthRequest, res: Response) => {
           type: "SELL",
           status: "COMPLETED",
           amountUSDT: amount,
-          amountRial: finalAmount,
+          amountToman: finalAmount,
           orderId,
         }],
         { session }
