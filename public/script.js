@@ -40,7 +40,15 @@ async function apiRequest(path, method = "GET", body = null) {
 }
 
 function formatNumber(value) {
-  return Number(value).toLocaleString("fa-IR");
+  if (value && typeof value === "object" && "$numberDecimal" in value) {
+    value = value.$numberDecimal;
+  }
+
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) return "-";
+
+  return number.toLocaleString("fa-IR");
 }
 
 async function withButtonLock(button, action) {
@@ -279,15 +287,17 @@ async function loadPriceHistory() {
 
 // --- Wallet ---
 
+
 async function refreshWallet() {
   const wallet = await apiRequest("/wallet");
-  document.getElementById("wallet-toman").textContent = formatNumber(
-    wallet.tomanBalance,
-  );
-  document.getElementById("wallet-tether").textContent = formatNumber(
-    wallet.tetherBalance,
-  );
+
+  document.getElementById("wallet-toman").textContent =
+    `${formatNumber(wallet.amountToman)} تومان`;
+
+  document.getElementById("wallet-tether").textContent =
+    `${formatNumber(wallet.amountUSDT)} USDT`;
 }
+
 
 // --- Daily buy/sell stacked chart ---
 
@@ -335,21 +345,28 @@ document.getElementById("daily-next-btn").addEventListener("click", () => {
 
 // --- Full transaction list (text) ---
 
+
 async function refreshTransactionList() {
   const data = await apiRequest(
     `/transactions?page=${transactionPage}&limit=5`,
   );
+
   console.log("TRANSACTION DATA:", data);
+  console.log("TRANSACTION ITEMS:", JSON.stringify(data.transactions, null, 2));
+
   const list = document.getElementById("transaction-list");
   list.innerHTML = "";
 
-  transactionTotalPages = data.totalPages || 1;
+  // Backend returns pagination inside data.pagination
+  transactionTotalPages = data.pagination?.totalPages || 1;
 
   data.transactions.forEach((tx) => {
     const item = document.createElement("li");
-    const isBuy = tx.type === "buy";
 
-    const typeLabel = isBuy ? "خرید" : "فروش";
+    const isBuy = tx.type === "BUY";
+    const isSell = tx.type === "SELL";
+
+    const typeLabel = isBuy ? "خرید" : isSell ? "فروش" : tx.type;
     const typeClass = isBuy ? "tx-buy" : "tx-sell";
 
     const dateStr = new Date(tx.createdAt).toLocaleDateString("fa-IR");
@@ -363,11 +380,11 @@ async function refreshTransactionList() {
     item.innerHTML = `
       <div class="tx-row-top">
         <span class="${typeClass}">
-          ${typeLabel} ${formatNumber(tx.amount)} USDT
+          ${typeLabel} ${formatNumber(tx.amountUSDT)} USDT
         </span>
 
         <span>
-          ${formatNumber(tx.totalToman)} تومان
+          ${formatNumber(tx.amountToman)} تومان
         </span>
       </div>
 
@@ -375,7 +392,14 @@ async function refreshTransactionList() {
         <span>${dateStr} - ${timeStr}</span>
 
         <span>
-          قیمت واحد: ${formatNumber(tx.pricePerUnit)}
+         قیمت واحد: ${
+         Number(tx.amountUSDT?.$numberDecimal ?? tx.amountUSDT) > 0
+          ? formatNumber(
+        Number(tx.amountToman?.$numberDecimal ?? tx.amountToman) /
+        Number(tx.amountUSDT?.$numberDecimal ?? tx.amountUSDT)
+      )
+    : "-"
+}
         </span>
       </div>
     `;
@@ -392,6 +416,7 @@ async function refreshTransactionList() {
   document.getElementById("transaction-next-btn").disabled =
     transactionPage >= transactionTotalPages;
 }
+
 
 document
   .getElementById("transaction-prev-btn")
@@ -426,11 +451,19 @@ async function refreshAllAfterTrade() {
   refreshTransactionList();
 }
 
+
+
 document.getElementById("buy-btn").addEventListener("click", async (e) => {
-  const amount = Number(document.getElementById("trade-amount").value);
+  const amount = document.getElementById("trade-amount").value;
+  const idempotencyKey = crypto.randomUUID();
+
   await withButtonLock(e.target, async () => {
     try {
-      await apiRequest("/buy", "POST", { amount });
+      await apiRequest("/buy", "POST", {
+        amount,
+        idempotencyKey,
+      });
+
       setTradeMessage("خرید موفق بود", false);
       refreshAllAfterTrade();
     } catch (error) {
@@ -438,6 +471,7 @@ document.getElementById("buy-btn").addEventListener("click", async (e) => {
     }
   });
 });
+
 
 document.getElementById("sell-btn").addEventListener("click", async (e) => {
   const amount = Number(document.getElementById("trade-amount").value);

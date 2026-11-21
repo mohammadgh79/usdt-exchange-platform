@@ -6,6 +6,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { AppError } from "../utils/AppError.js";
 import { Types } from "mongoose";
 
+
 export const getWallet = asyncHandler(
   async (req: AuthRequest, res: Response) => {
     if (!req.user) {
@@ -14,17 +15,24 @@ export const getWallet = asyncHandler(
 
     const userId = new Types.ObjectId(req.user.id);
 
-    const wallet = await Wallet.findOne({
-      userId: userId,
-    });
+    const wallet = await Wallet.findOne({ userId });
 
     if (!wallet) {
       throw new AppError("کیف پول پیدا نشد", 404);
     }
 
-    res.json(wallet);
+    res.json({
+      _id: wallet._id,
+      userId: wallet.userId,
+      amountToman: wallet.amountToman.toString(),
+      amountUSDT: wallet.amountUSDT.toString(),
+      transactions: wallet.transactions,
+      createdAt: wallet.createdAt,
+      updatedAt: wallet.updatedAt,
+    });
   },
 );
+
 
 export const getTransactions = asyncHandler(
   async (req: AuthRequest, res: Response) => {

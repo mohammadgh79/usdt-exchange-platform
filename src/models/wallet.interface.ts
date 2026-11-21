@@ -3,8 +3,8 @@ import type { Types } from "mongoose";
 
 export interface IWallet {
   userId: Types.ObjectId;
-  amountToman: number;
-  amountUSDT: number;
+  amountToman: Types.Decimal128;
+  amountUSDT: Types.Decimal128;
   transactions: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;

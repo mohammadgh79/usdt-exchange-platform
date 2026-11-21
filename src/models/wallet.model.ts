@@ -1,4 +1,5 @@
-import { Schema, model } from "mongoose";
+
+import { Schema, model,Types } from "mongoose";
 import type { IWallet } from "./wallet.interface.js";
 
 const walletSchema = new Schema<IWallet>(
@@ -11,17 +12,15 @@ const walletSchema = new Schema<IWallet>(
     },
 
     amountToman: {
-      type: Number,
+      type: Schema.Types.Decimal128,
       required: true,
-      default: 0,
-      min: 0,
+      default: () => Types.Decimal128.fromString("0"),
     },
 
     amountUSDT: {
-      type: Number,
+      type: Schema.Types.Decimal128,
       required: true,
-      default: 0,
-      min: 0,
+      default: () => Types.Decimal128.fromString("0"),
     },
 
     transactions: [
