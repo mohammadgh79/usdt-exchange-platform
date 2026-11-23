@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import type { IDeposit } from "./deposit.interface.js";
+
 const DepositSchema = new Schema<IDeposit>(
   {
     userId: {
@@ -8,26 +9,21 @@ const DepositSchema = new Schema<IDeposit>(
       ref: "User",
     },
     amountToman: {
-      type: Number,
+      type: Schema.Types.Decimal128,
       required: true,
       min: 1,
+    },
+    status: {
+      type: String,
+      enum: ["COMPLETED"],
+      default: "COMPLETED",
+      required: true,
     },
     transactionId: {
       type: Schema.Types.ObjectId,
       required: true,
       ref: "Transaction",
       unique: true,
-
-    },
-    reviewedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
-    reviewedAt: {
-      type: Date,
-    },
-    rejectionReason: {
-      type: String,
     },
   },
   {

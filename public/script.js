@@ -473,11 +473,18 @@ document.getElementById("buy-btn").addEventListener("click", async (e) => {
 });
 
 
+
 document.getElementById("sell-btn").addEventListener("click", async (e) => {
-  const amount = Number(document.getElementById("trade-amount").value);
+  const amount = document.getElementById("trade-amount").value.trim();
+  const idempotencyKey = crypto.randomUUID();
+
   await withButtonLock(e.target, async () => {
     try {
-      await apiRequest("/sell", "POST", { amount });
+      await apiRequest("/sell", "POST", {
+        amount,
+        idempotencyKey,
+      });
+
       setTradeMessage("فروش موفق بود", false);
       refreshAllAfterTrade();
     } catch (error) {

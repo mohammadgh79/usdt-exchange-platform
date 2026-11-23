@@ -1,4 +1,3 @@
-
 import mongoose, { Types } from "mongoose";
 import { Decimal } from "decimal.js";
 import { Wallet } from "../models/wallet.model.js";
@@ -98,7 +97,7 @@ async function getExistingOrder(
   const wallet = await Wallet.findOne({ userId });
 
   if (!wallet) {
-    throw new AppError("Wallet not found", 404);
+    throw new AppError("کیف پول پیدا نشد", 404);
   }
 
   return {
@@ -134,12 +133,15 @@ export async function buyUsdt(
   }
 
   const total = toTomanDecimal(amountDecimal.mul(priceDecimal));
+
   const fee = toTomanDecimal(
     total.mul(BUY_FEE_PERCENT).div(100),
   );
+
   const tax = toTomanDecimal(
     total.mul(TAX_PERCENT).div(100),
   );
+
   const finalAmount = total.plus(fee).plus(tax);
 
   const amount128 = toDecimal128(amountDecimal);
@@ -148,6 +150,7 @@ export async function buyUsdt(
   const fee128 = toDecimal128(fee);
   const tax128 = toDecimal128(tax);
   const finalAmount128 = toDecimal128(finalAmount);
+
   const negativeFinalAmount128 = toDecimal128(
     finalAmount.negated(),
   );
@@ -164,7 +167,7 @@ export async function buyUsdt(
       );
 
       if (!currentWallet) {
-        throw new AppError("Wallet not found", 404);
+        throw new AppError("کیف پول پیدا نشد", 404);
       }
 
       const updatedWallet = await Wallet.findOneAndUpdate(
@@ -210,17 +213,20 @@ export async function buyUsdt(
           { session },
         );
 
-        const transaction = new Transaction({
-          _id: transactionId,
-          userId,
-          type: "BUY",
-          status: "REJECTED",
-          amountUSDT: amount128,
-          amountToman: finalAmount128,
-          orderId,
-        });
-
-        await transaction.save({ session });
+        const [transaction] = await Transaction.create(
+          [
+            {
+              _id: transactionId,
+              userId,
+              type: "BUY",
+              status: "REJECTED",
+              amountUSDT: amount128,
+              amountToman: finalAmount128,
+              orderId,
+            },
+          ],
+          { session },
+        );
 
         return {
           wallet: currentWallet,
@@ -251,17 +257,20 @@ export async function buyUsdt(
         { session },
       );
 
-      const transaction = new Transaction({
-        _id: transactionId,
-        userId,
-        type: "BUY",
-        status: "COMPLETED",
-        amountUSDT: amount128,
-        amountToman: finalAmount128,
-        orderId,
-      });
-
-      await transaction.save({ session });
+      const [transaction] = await Transaction.create(
+        [
+          {
+            _id: transactionId,
+            userId,
+            type: "BUY",
+            status: "COMPLETED",
+            amountUSDT: amount128,
+            amountToman: finalAmount128,
+            orderId,
+          },
+        ],
+        { session },
+      );
 
       return {
         wallet: updatedWallet,

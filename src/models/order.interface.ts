@@ -1,4 +1,4 @@
-﻿
+
 import type { Types } from "mongoose";
 import type { OrderType, OrderStatus } from "./order.type.js";
 export interface IOrder {
@@ -18,4 +18,3 @@ export interface IOrder {
   updatedAt: Date;
   idempotencyKey: string;
 }
-

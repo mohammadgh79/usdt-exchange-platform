@@ -1,33 +1,37 @@
+
 import { Schema, model } from "mongoose";
 import type { IWithdraw } from "./withdraw.interface.js";
-const WithdrawSchema = new Schema<IWithdraw>(
+
+const withdrawSchema = new Schema<IWithdraw>(
   {
     userId: {
       type: Schema.Types.ObjectId,
       required: true,
       ref: "User",
     },
+
     amountToman: {
-      type: Number,
+      type: Schema.Types.Decimal128,
       required: true,
       min: 1,
     },
+
+    status: {
+      type: String,
+      required: true,
+      enum: ["COMPLETED", "REJECTED"],
+    },
+    idempotencyKey: {
+     type: String,
+     required: true,
+     trim: true,  
+     },
+
     transactionId: {
       type: Schema.Types.ObjectId,
       required: true,
       ref: "Transaction",
       unique: true,
-
-    },
-    reviewedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
-    reviewedAt: {
-      type: Date,
-    },
-    rejectionReason: {
-      type: String,
     },
   },
   {
@@ -35,4 +39,4 @@ const WithdrawSchema = new Schema<IWithdraw>(
   },
 );
 
-export const Withdraw = model<IWithdraw>("Withdraw", WithdrawSchema);
+export const Withdraw = model<IWithdraw>("Withdraw", withdrawSchema);

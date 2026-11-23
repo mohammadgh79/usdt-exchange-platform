@@ -1,13 +1,11 @@
-import { Types } from "mongoose"
+import type { Types } from "mongoose";
+import type { DepositStatus } from "./deposit.type.js";
 
-export interface IDeposit{
-  userId:Types.ObjectId;
-  amountToman: number;
+export interface IDeposit {
+  userId: Types.ObjectId;
+  amountToman: Types.Decimal128;
+  status: DepositStatus;
   transactionId: Types.ObjectId;
-  reviewedBy?: Types.ObjectId;
-  reviewedAt?: Date;
-  rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
-
 }

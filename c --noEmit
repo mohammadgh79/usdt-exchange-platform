@@ -1,0 +1,13 @@
+ public/script.js                     |  64 [32m+++++[m[31m--[m
+ src/controllers/trade.controller.ts  | 344 [32m++++++++++++++[m[31m---------------------[m
+ src/controllers/wallet.controller.ts |  16 [32m+[m[31m-[m
+ src/models/order.interface.ts        |  15 [32m+[m[31m-[m
+ src/models/order.model.ts            | 155 [32m++++++++[m[31m--------[m
+ src/models/transaction.interface.ts  |   4 [32m+[m[31m-[m
+ src/models/transaction.model.ts      | 178 [32m+++++++++[m[31m---------[m
+ src/models/wallet.interface.ts       |   4 [32m+[m[31m-[m
+ src/models/wallet.model.ts           |  15 [32m+[m[31m-[m
+ src/services/buy.service.ts          | 331 [32m+++++++++++++++++[m[31m----------------[m
+ src/validators/trade.validator.ts    |  22 [32m++[m[31m-[m
+ tsconfig.json                        |   3 [32m+[m
+ 12 files changed, 594 insertions(+), 557 deletions(-)
