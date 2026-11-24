@@ -2,9 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 
-/**
- * Extends Express's Request type to optionally carry the authenticated user.
- */
+
 export interface AuthRequest extends Request {
   user?: {
     id: string;
@@ -12,11 +10,7 @@ export interface AuthRequest extends Request {
   };
 }
 
-/**
- * Protects a route by requiring a valid JWT in the Authorization header.
- * On success, attaches the decoded user id and role to req.user and calls next().
- * On failure, responds with 401 and does not call next().
- */
+
 export const protect = async (
   req: AuthRequest,
   res: Response,

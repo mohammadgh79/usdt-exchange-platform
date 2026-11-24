@@ -4,7 +4,7 @@ import { Deposit } from "../models/deposit.model.js";
 import { Wallet } from "../models/wallet.model.js";
 import { Transaction } from "../models/transaction.model.js";
 import { AppError } from "../utils/AppError.js";
-
+import { getTransactionLimits } from "./transaction-limit.service.js";
 function validateDepositAmount(amount: string): Decimal {
   if (
     typeof amount !== "string" ||
@@ -27,6 +27,29 @@ export async function createDeposit(
   amountToman: string,
 ) {
   const parsedAmount = validateDepositAmount(amountToman);
+  const limits = await getTransactionLimits();
+
+const minDepositAmount = new Decimal(
+  limits.depositMinToman.toString()
+);
+
+const maxDepositAmount = new Decimal(
+  limits.depositMaxToman.toString()
+);
+
+if (parsedAmount.lt(minDepositAmount)) {
+  throw new AppError(
+    `حداقل مبلغ واریز ${minDepositAmount.toString()} تومان است`,
+    400
+  );
+}
+
+if (parsedAmount.gt(maxDepositAmount)) {
+  throw new AppError(
+    `حداکثر مبلغ واریز ${maxDepositAmount.toString()} تومان است`,
+    400
+  );
+}
 
   const amount128 = Types.Decimal128.fromString(
     parsedAmount.toString(),

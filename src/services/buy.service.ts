@@ -5,6 +5,7 @@ import { Order } from "../models/order.model.js";
 import { Transaction } from "../models/transaction.model.js";
 import { AppError } from "../utils/AppError.js";
 import { getUsdtPrice } from "./price.service.js";
+import { getTransactionLimits } from "./transaction-limit.service.js";
 
 const BUY_FEE_PERCENT = 1.5;
 const TAX_PERCENT = 10;
@@ -124,6 +125,24 @@ export async function buyUsdt(
   if (existingResult) {
     return existingResult;
   }
+  const limits = await getTransactionLimits();
+
+const minBuyAmount = new Decimal(limits.buyMinUSDT.toString());
+const maxBuyAmount = new Decimal(limits.buyMaxUSDT.toString());
+
+if (amountDecimal.lt(minBuyAmount)) {
+  throw new AppError(
+    `حداقل مقدار خرید ${minBuyAmount.toString()} USDT است`,
+    400
+  );
+}
+
+if (amountDecimal.gt(maxBuyAmount)) {
+  throw new AppError(
+    `حداکثر مقدار خرید ${maxBuyAmount.toString()} USDT است`,
+    400
+  );
+}
 
   const priceValue = await getUsdtPrice();
   const priceDecimal = new Decimal(String(priceValue));

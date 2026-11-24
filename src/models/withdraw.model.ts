@@ -9,6 +9,7 @@ const withdrawSchema = new Schema<IWithdraw>(
       required: true,
       ref: "User",
     },
+    
 
     amountToman: {
       type: Schema.Types.Decimal128,
@@ -26,6 +27,7 @@ const withdrawSchema = new Schema<IWithdraw>(
      required: true,
      trim: true,  
      },
+     
 
     transactionId: {
       type: Schema.Types.ObjectId,
@@ -38,5 +40,8 @@ const withdrawSchema = new Schema<IWithdraw>(
     timestamps: true,
   },
 );
-
+withdrawSchema.index(
+  { userId: 1, idempotencyKey: 1 },
+  { unique: true },
+);
 export const Withdraw = model<IWithdraw>("Withdraw", withdrawSchema);

@@ -1,7 +1,8 @@
 
 import mongoose, { Types } from "mongoose";
 import { Decimal } from "decimal.js";
-
+import { getTransactionLimits } from "./transaction-limit.service.js";
+ 
 import { Wallet } from "../models/wallet.model.js";
 import { Order } from "../models/order.model.js";
 import { Transaction } from "../models/transaction.model.js";
@@ -12,17 +13,17 @@ import { getUsdtPrice } from "./price.service.js";
 const SELL_FEE_PERCENT = 0.99;
 const TAX_PERCENT = 10;
 
-// تبدیل Decimal به Decimal128
+
 function toDecimal128(value: Decimal): Types.Decimal128 {
   return Types.Decimal128.fromString(value.toString());
 }
 
-// گرد کردن مبلغ تومان به عدد صحیح
+
 function toTomanDecimal(value: Decimal): Decimal {
   return value.toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
 }
 
-// اعتبارسنجی Idempotency Key
+
 function validateIdempotencyKey(key: string): string {
   if (
     typeof key !== "string" ||
@@ -35,7 +36,7 @@ function validateIdempotencyKey(key: string): string {
   return key.trim();
 }
 
-// اعتبارسنجی مقدار USDT
+
 function validateAmount(amount: string): Decimal {
   if (
     typeof amount !== "string" ||
@@ -53,7 +54,7 @@ function validateAmount(amount: string): Decimal {
   return parsedAmount;
 }
 
-// بررسی سفارش قبلی با همان Idempotency Key
+
 async function getExistingOrder(
   userId: Types.ObjectId,
   idempotencyKey: string,
@@ -110,7 +111,7 @@ async function getExistingOrder(
   };
 }
 
-// تشخیص Duplicate Key مربوط به Idempotency Index
+
 function isIdempotencyDuplicateError(
   error: unknown,
 ): boolean {
@@ -145,17 +146,17 @@ function isIdempotencyDuplicateError(
   );
 }
 
-// سرویس فروش تتر
+
 export async function sellUsdt(
   amount: string,
   userId: Types.ObjectId,
   idempotencyKey: string,
 ) {
-  // 1. اعتبارسنجی ورودی‌ها
+  
   const amountDecimal = validateAmount(amount);
   const validKey = validateIdempotencyKey(idempotencyKey);
 
-  // 2. بررسی درخواست تکراری
+ 
   const existingResult = await getExistingOrder(
     userId,
     validKey,
@@ -165,8 +166,26 @@ export async function sellUsdt(
   if (existingResult) {
     return existingResult;
   }
+  const limits = await getTransactionLimits();
 
-  // 3. دریافت قیمت تتر
+const minSellAmount = new Decimal(limits.sellMinUSDT.toString());
+const maxSellAmount = new Decimal(limits.sellMaxUSDT.toString());
+
+if (amountDecimal.lt(minSellAmount)) {
+  throw new AppError(
+    `حداقل مقدار فروش ${minSellAmount.toString()} USDT است`,
+    400
+  );
+}
+
+if (amountDecimal.gt(maxSellAmount)) {
+  throw new AppError(
+    `حداکثر مقدار فروش ${maxSellAmount.toString()} USDT است`,
+    400
+  );
+}
+
+  
   const price = await getUsdtPrice();
   const priceDecimal = new Decimal(String(price));
 
@@ -174,7 +193,7 @@ export async function sellUsdt(
     throw new AppError("قیمت تتر معتبر نیست", 500);
   }
 
-  // 4. محاسبات مالی
+  
   const total = toTomanDecimal(
     amountDecimal.mul(priceDecimal),
   );
@@ -196,7 +215,7 @@ export async function sellUsdt(
     );
   }
 
-  // 5. تبدیل مقادیر به Decimal128
+  
   const amount128 = toDecimal128(amountDecimal);
   const price128 = toDecimal128(priceDecimal);
   const total128 = toDecimal128(total);
@@ -208,16 +227,16 @@ export async function sellUsdt(
     amountDecimal.negated(),
   );
 
-  // 6. ساخت شناسه‌ها قبل از شروع تراکنش
+  
   const orderId = new Types.ObjectId();
   const transactionId = new Types.ObjectId();
 
-  // 7. شروع Session
+ 
   const session = await mongoose.startSession();
 
   try {
     const result = await session.withTransaction(async () => {
-      // دریافت Wallet داخل Session
+      
       const currentWallet = await Wallet.findOne({
         userId,
       }).session(session);
@@ -226,7 +245,7 @@ export async function sellUsdt(
         throw new AppError("کیف پول پیدا نشد", 404);
       }
 
-      // 8. بررسی موجودی و به‌روزرسانی اتمیک Wallet
+      
       const updatedWallet = await Wallet.findOneAndUpdate(
         {
           userId,
@@ -247,12 +266,11 @@ export async function sellUsdt(
         },
       );
 
-      // 9. تعیین وضعیت سفارش
       const status = updatedWallet
         ? "COMPLETED"
         : "REJECTED";
 
-      // 10. ایجاد Order
+      
       const [order] = await Order.create(
         [
           {
@@ -275,7 +293,7 @@ export async function sellUsdt(
         { session },
       );
 
-      // 11. ایجاد Transaction
+      
       const [transaction] = await Transaction.create(
         [
           {
@@ -291,7 +309,6 @@ export async function sellUsdt(
         { session },
       );
 
-      // 12. خروجی سرویس
       return {
         wallet: updatedWallet ?? currentWallet,
         order,
@@ -301,7 +318,6 @@ export async function sellUsdt(
 
     return result;
   } catch (error: unknown) {
-    // مدیریت درخواست‌های هم‌زمان با Idempotency Key یکسان
     if (isIdempotencyDuplicateError(error)) {
       const duplicateResult = await getExistingOrder(
         userId,
@@ -316,7 +332,6 @@ export async function sellUsdt(
 
     throw error;
   } finally {
-    // آزادسازی Session
     await session.endSession();
   }
 }
