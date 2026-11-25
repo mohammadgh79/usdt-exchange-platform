@@ -1,8 +1,16 @@
+
 import mongoose, { Schema } from "mongoose";
 import type { ITransactionLimit } from "./transaction-limit.interface.js";
 
 const transactionLimitSchema = new Schema<ITransactionLimit>(
   {
+    singletonKey: {
+      type: String,
+      required: true,
+      default: "global",
+      immutable: true,
+    },
+
     buyMinUSDT: { type: Schema.Types.Decimal128, required: true },
     buyMaxUSDT: { type: Schema.Types.Decimal128, required: true },
 
@@ -16,6 +24,11 @@ const transactionLimitSchema = new Schema<ITransactionLimit>(
     withdrawMaxToman: { type: Schema.Types.Decimal128, required: true },
   },
   { timestamps: true }
+);
+
+transactionLimitSchema.index(
+  { singletonKey: 1 },
+  { unique: true }
 );
 
 const TransactionLimit = mongoose.model<ITransactionLimit>(

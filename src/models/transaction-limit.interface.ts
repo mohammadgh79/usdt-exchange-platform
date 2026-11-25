@@ -1,6 +1,9 @@
+
 import type { Types } from "mongoose";
 
 export interface ITransactionLimit {
+  singletonKey: string;
+
   buyMinUSDT: Types.Decimal128;
   buyMaxUSDT: Types.Decimal128;
 

@@ -1,27 +1,55 @@
+
 import TransactionLimit from "../models/transaction-limit.model.js";
 import { Decimal } from "decimal.js";
 import { AppError } from "../utils/AppError.js";
 
+const SINGLETON_KEY = "global";
+
+const DEFAULT_LIMITS = {
+  buyMinUSDT: "1",
+  buyMaxUSDT: "10000",
+
+  sellMinUSDT: "1",
+  sellMaxUSDT: "10000",
+
+  depositMinToman: "100000",
+  depositMaxToman: "500000000",
+
+  withdrawMinToman: "100000",
+  withdrawMaxToman: "500000000",
+};
+
 export const getTransactionLimits = async () => {
-  let limits = await TransactionLimit.findOne();
+  await TransactionLimit.init();
 
-  if (!limits) {
-    limits = await TransactionLimit.create({
-      buyMinUSDT: "1",
-      buyMaxUSDT: "10000",
+  try {
+    const limits = await TransactionLimit.findOneAndUpdate(
+      { singletonKey: SINGLETON_KEY },
+      { $setOnInsert: DEFAULT_LIMITS },
+      {
+        upsert: true,
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      }
+    );
 
-      sellMinUSDT: "1",
-      sellMaxUSDT: "10000",
+    if (!limits) {
+      throw new AppError("Could not retrieve transaction limits.", 500);
+    }
 
-      depositMinToman: "100000",
-      depositMaxToman: "500000000",
-
-      withdrawMinToman: "100000",
-      withdrawMaxToman: "500000000",
+    return limits;
+  } catch (error) {
+    const existingLimits = await TransactionLimit.findOne({
+      singletonKey: SINGLETON_KEY,
     });
-  }
 
-  return limits;
+    if (existingLimits) {
+      return existingLimits;
+    }
+
+    throw error;
+  }
 };
 
 export const updateTransactionLimits = async (
@@ -68,9 +96,15 @@ export const updateTransactionLimits = async (
     }
   }
 
-  return TransactionLimit.findByIdAndUpdate(
-    currentLimits._id,
-    updates,
+  const updatedLimits = await TransactionLimit.findOneAndUpdate(
+    { singletonKey: SINGLETON_KEY },
+    { $set: updates },
     { new: true, runValidators: true }
   );
+
+  if (!updatedLimits) {
+    throw new AppError("Could not update transaction limits.", 500);
+  }
+
+  return updatedLimits;
 };
