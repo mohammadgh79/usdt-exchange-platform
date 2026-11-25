@@ -1,3 +1,4 @@
+
 import { Schema, model } from "mongoose";
 import type { IDeposit } from "./deposit.interface.js";
 
@@ -25,10 +26,21 @@ const DepositSchema = new Schema<IDeposit>(
       ref: "Transaction",
       unique: true,
     },
+    idempotencyKey: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 128,
+    },
   },
   {
     timestamps: true,
   },
+);
+
+DepositSchema.index(
+  { userId: 1, idempotencyKey: 1 },
+  { unique: true },
 );
 
 export const Deposit = model<IDeposit>("Deposit", DepositSchema);
