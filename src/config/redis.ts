@@ -1,16 +1,25 @@
-import { Redis } from 'ioredis';
-/**
- * Redis client instance, connected using the URL from environment variables.
- * Exported as a singleton so the same connection is reused across the app.
- */
-const redisUrl = process.env.REDIS_URL as string;
+import "dotenv/config";
+import { Redis } from "ioredis";
 
-export const redisClient = new Redis(redisUrl);
+const redisUrl = process.env.REDIS_URL;
 
-redisClient.on('connect', () => {
-  console.log('Redis connected successfully');
+if (!redisUrl) {
+  throw new Error("REDIS_URL در فایل .env تعریف نشده است");
+}
+
+export const redisClient = new Redis(redisUrl, {
+  lazyConnect: true,
 });
 
-redisClient.on('error', (error) => {
-  console.error('Redis connection error:', error);
+redisClient.on("connect", () => {
+  console.log("Redis connected successfully");
 });
+
+redisClient.on("error", (error) => {
+  console.error("Redis connection error:", error);
+});
+
+export const connectRedis = async (): Promise<void> => {
+  await redisClient.connect();
+  await redisClient.ping();
+};
