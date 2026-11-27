@@ -48,6 +48,8 @@ function validateIdempotencyKey(key: string): string {
 }
 
 function isIdempotencyDuplicateError(error: unknown): boolean {
+  
+
   if (typeof error !== "object" || error === null) {
     return false;
   }
@@ -55,12 +57,27 @@ function isIdempotencyDuplicateError(error: unknown): boolean {
   const mongoError = error as {
     code?: unknown;
     keyPattern?: Record<string, unknown>;
+    message?: string;
   };
 
+  if (mongoError.code !== 11000) {
+    return false;
+  }
+
+  const keyPattern = mongoError.keyPattern;
+
+  if (
+    keyPattern?.userId === 1 &&
+    keyPattern?.idempotencyKey === 1
+  ) {
+    return true;
+  }
+
   return (
-    mongoError.code === 11000 &&
-    mongoError.keyPattern?.userId === 1 &&
-    mongoError.keyPattern?.idempotencyKey === 1
+    typeof mongoError.message === "string" &&
+    mongoError.message.includes(
+      "userId_1_idempotencyKey_1",
+    )
   );
 }
 
@@ -78,7 +95,15 @@ async function getExistingOrder(
     return null;
   }
 
+  if (existingOrder.type !== "BUY") {
+    throw new AppError(
+      "این کلید قبلاً برای نوع دیگری از درخواست استفاده شده است",
+      409,
+    );
+  }
+
   const existingAmount = new Decimal(existingOrder.amount.toString());
+
 
   if (!existingAmount.eq(amount)) {
     throw new AppError(
