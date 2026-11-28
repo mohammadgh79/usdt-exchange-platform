@@ -1,3 +1,4 @@
+
 import { Router } from "express";
 
 import { protect } from "../middlewares/auth.middlewares.js";
@@ -17,7 +18,7 @@ router.get(
   "/transaction-limits",
   protect,
   adminOnly,
-  getAdminTransactionLimits
+  getAdminTransactionLimits,
 );
 
 router.patch(
@@ -25,7 +26,7 @@ router.patch(
   protect,
   adminOnly,
   validate(transactionLimitSchema),
-  updateAdminTransactionLimits
+  updateAdminTransactionLimits,
 );
 
 export default router;

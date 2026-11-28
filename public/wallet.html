@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>کیف پول | صرافی تتر</title>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="wallet.css" />
+</head>
+<body>
+  <main class="wallet-container">
+    <header class="wallet-header">
+      <div>
+        <h1>کیف پول من</h1>
+        <p>مدیریت موجودی، واریز و برداشت</p>
+      </div>
+
+      <div class="header-actions">
+        <a href="/index.html" class="back-link">بازگشت به داشبورد</a>
+        <button id="logout-btn" class="logout-btn">خروج</button>
+      </div>
+    </header>
+
+    <section class="balance-grid">
+      <div class="balance-card">
+        <span>موجودی تومان</span>
+        <strong id="wallet-toman">در حال دریافت...</strong>
+      </div>
+
+      <div class="balance-card">
+        <span>موجودی USDT</span>
+        <strong id="wallet-usdt">در حال دریافت...</strong>
+      </div>
+    </section>
+
+    <section class="forms-grid">
+      <div class="panel">
+        <h2>واریز تومان</h2>
+        <p class="description">
+          مبلغ موردنظر برای واریز به کیف پول را وارد کنید.
+        </p>
+
+        <form id="deposit-form">
+          <label for="deposit-amount">مبلغ واریز (تومان)</label>
+          <input
+            id="deposit-amount"
+            type="number"
+            min="100000"
+            step="1"
+            placeholder="مثلاً 1000000"
+            required
+          />
+
+          <button type="submit" id="deposit-btn">
+            ثبت واریز
+          </button>
+
+          <p id="deposit-message" class="form-message"></p>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>برداشت تومان</h2>
+        <p class="description">
+          درخواست برداشت ثبت می‌شود و برای تأیید به ادمین ارسال خواهد شد.
+        </p>
+
+        <form id="withdraw-form">
+          <label for="withdraw-amount">مبلغ برداشت (تومان)</label>
+          <input
+            id="withdraw-amount"
+            type="number"
+            min="100000"
+            step="1"
+            placeholder="مثلاً 400000"
+            required
+          />
+
+          <button type="submit" id="withdraw-btn">
+            ثبت درخواست برداشت
+          </button>
+
+          <p id="withdraw-message" class="form-message"></p>
+        </form>
+      </div>
+    </section>
+
+    <section class="panel history-panel">
+      <div class="history-header">
+        <div>
+          <h2>تاریخچه تراکنش‌ها</h2>
+          <p class="description">
+            وضعیت و جزئیات آخرین تراکنش‌های حساب شما
+          </p>
+        </div>
+
+        <button id="refresh-btn" class="refresh-btn">
+          بروزرسانی
+        </button>
+      </div>
+
+      <ul id="transaction-list">
+        <li class="empty-message">در حال دریافت تراکنش‌ها...</li>
+      </ul>
+
+      <div class="pagination">
+        <button id="prev-btn">قبلی</button>
+        <span id="page-indicator">صفحه ۱ از ۱</span>
+        <button id="next-btn">بعدی</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="wallet.js"></script>
+</body>
+</html>

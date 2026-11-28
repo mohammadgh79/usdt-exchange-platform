@@ -20,7 +20,7 @@ const withdrawSchema = new Schema<IWithdraw>(
     status: {
       type: String,
       required: true,
-      enum: ["COMPLETED", "REJECTED"],
+      enum: ["PENDING", "COMPLETED", "REJECTED"],
     },
     idempotencyKey: {
      type: String,

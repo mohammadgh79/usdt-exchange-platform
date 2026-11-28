@@ -1,1 +1,4 @@
-export type WithdrawStatus = "COMPLETED" | "REJECTED";
+export type WithdrawStatus =
+  | "PENDING"
+  | "COMPLETED"
+  | "REJECTED";

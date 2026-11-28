@@ -15,11 +15,26 @@ export const getWallet = asyncHandler(
 
     const userId = new Types.ObjectId(req.user.id);
 
-    const wallet = await Wallet.findOne({ userId });
+    const wallet = await Wallet.findOneAndUpdate(
+  { userId },
+  {
+    $setOnInsert: {
+      userId,
+      amountToman: "0",
+      amountUSDT: "0",
+      transactions: [],
+    },
+  },
+  {
+    new: true,
+    upsert: true,
+    setDefaultsOnInsert: true,
+  },
+);
 
-    if (!wallet) {
-      throw new AppError("کیف پول پیدا نشد", 404);
-    }
+if (!wallet) {
+  throw new AppError("خطا در دریافت کیف پول", 500);
+}
 
     res.json({
       _id: wallet._id,
